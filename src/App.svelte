@@ -1,58 +1,43 @@
+<script context="module">
+    export async function fetchPosts() {
+        return fetch('https://jsonplaceholder.typicode.com/posts')
+            .then((response) => response.json())
+            .then((posts) => posts);
+    }
+</script>
+
 <script>
     import { Table } from 'data-table';
     import { onMount } from 'svelte';
-
-    const columns = [
-        {
-            name: 'Name',
-            sortable: true,
-            visible: true,
-            selectable: true,
-            type: 'string',
-        },
-        {
-            name: 'Age',
-            sortable: true,
-            visible: true,
-            selectable: true,
-            type: 'number',
-        },
-    ];
-
-    const rows = [
-        {
-            name: 'John',
-            age: '30',
-        },
-        {
-            name: 'Joe',
-            age: '20',
-        },
-        {
-            name: 'Jane',
-            age: '40',
-        },
-    ];
+    import { columns } from './lib/columnsDefinitions.js';
 
     let searchValue = undefined;
     let filteredRows = [];
+    let table;
 
-    const table = new Table();
-    table.createFromJSON(columns, rows);
-    filteredRows = table.rows;
-
+    /**
+     * @param {string} value
+     */
     const search = (value) => {
         if (!value) {
-            filteredRows = table.rows;
-            return;
+            if (table?.rows) {
+                return table.rows;
+            } else {
+                return [];
+            }
+        } else {
+            return table.globalSearch(value);
         }
-
-        filteredRows = table.search(value);
     };
 
-    $: search(searchValue);
+    $: filteredRows = search(searchValue);
 
-    onMount(async () => {});
+    onMount(async () => {
+        table = new Table();
+        const posts = await fetchPosts();
+        table.createFromJSON(columns, posts);
+        filteredRows = table.rows;
+    });
 </script>
 
 <main>
@@ -60,7 +45,7 @@
     <table>
         <thead>
             <tr>
-                {#if table.header}
+                {#if table?.header}
                     {#each table.header?.cells as cell}
                         <th>{cell.value}</th>
                     {/each}
