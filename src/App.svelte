@@ -1,13 +1,14 @@
 <script>
-    import { Cell, Table } from 'data-table';
+    import { Table } from 'data-table';
+    import { onMount } from 'svelte';
 
     const columns = [
         {
             name: 'Name',
             sortable: true,
-            visible: false,
-            type: 'string',
+            visible: true,
             selectable: true,
+            type: 'string',
         },
         {
             name: 'Age',
@@ -33,33 +34,50 @@
         },
     ];
 
+    let searchValue = undefined;
+    let filteredRows = [];
+
     const table = new Table();
     table.createFromJSON(columns, rows);
+    filteredRows = table.rows;
 
-    const tableRows = table.rows;
-    tableRows.forEach((row) => {
-        console.log(row.toValueObject());
-    });
+    const search = (value) => {
+        if (!value) {
+            filteredRows = table.rows;
+            return;
+        }
+
+        filteredRows = table.search(value);
+    };
+
+    $: search(searchValue);
+
+    onMount(async () => {});
 </script>
 
 <main>
+    <input type="search" name="search" bind:value={searchValue} />
     <table>
         <thead>
             <tr>
-                {#each table.header.cells as cell}
-                    <th>{cell.value}</th>
-                {/each}
+                {#if table.header}
+                    {#each table.header?.cells as cell}
+                        <th>{cell.value}</th>
+                    {/each}
+                {/if}
             </tr>
         </thead>
 
         <tbody>
-            {#each table.rows as row}
-                <tr>
-                    {#each row.cells as cell}
-                        <td>{cell.value}</td>
-                    {/each}
-                </tr>
-            {/each}
+            {#if filteredRows && filteredRows.length > 0}
+                {#each filteredRows as row}
+                    <tr>
+                        {#each row.cells as cell}
+                            <td>{cell.value}</td>
+                        {/each}
+                    </tr>
+                {/each}
+            {/if}
         </tbody>
     </table>
 </main>
