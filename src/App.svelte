@@ -7,13 +7,25 @@
 </script>
 
 <script>
-    import { Table } from 'data-table';
+    import 'bulma-svelte/src/styles/main.scss';
     import { onMount } from 'svelte';
     import { columns } from './lib/columnsDefinitions.js';
+    import { DataTable } from 'data-table';
+    import Table from 'bulma-svelte/src/components/table/table.svelte';
+    import TableBody from 'bulma-svelte/src/components/table/table-body.svelte';
+    import TableHead from 'bulma-svelte/src/components/table/table-head.svelte';
+    import TableCell from 'bulma-svelte/src/components/table/table-cell.svelte';
+    import TableCellHeading from 'bulma-svelte/src/components/table/table-cell-heading.svelte';
+    import TableContainer from 'bulma-svelte/src/components/table/table-container.svelte';
+    import TableRow from 'bulma-svelte/src/components/table/table-row.svelte';
 
     let searchValue = undefined;
     let filteredRows = [];
+    /** @type {DataTable}*/
     let table;
+    let tableColumns;
+    let tableRows;
+    let tableHeader;
 
     /**
      * @param {string} value
@@ -33,41 +45,72 @@
     $: filteredRows = search(searchValue);
 
     onMount(async () => {
-        table = new Table();
+        table = new DataTable();
 
         const posts = await fetchPosts();
 
         table.createFromJSON(columns, posts);
-        filteredRows = table.rows;
+        tableRows = table.rows;
+        tableColumns = table.columns;
+        tableHeader = table.header;
+
+        table.onUpdate((result) => {
+            tableRows = result;
+        });
+
+        table.onColumnsChanged((columns) => {
+            tableColumns = columns;
+            console.log(columns);
+        });
+
+        table.onRowsChanged((rows) => {
+            tableRows = rows;
+            filteredRows = rows;
+        });
+
+        table.onHeaderChanged((header) => {
+            tableHeader = header;
+            console.log(header);
+        });
     });
+
+    const onColumnClick = (e) => {
+        table.hideColumn(e);
+    };
 </script>
 
 <main>
-    <input type="search" name="search" bind:value={searchValue} />
-    <table>
-        <thead>
-            <tr>
-                {#if table?.header}
-                    {#each table.header?.cells as cell}
-                        <th>{cell.value}</th>
+    <TableContainer>
+        <Table isFullWidth isHoverable isStriped>
+            <TableHead>
+                <TableRow>
+                    {#if tableHeader}
+                        {#each table.header?.cells as cell}
+                            {#if cell.visibility === true}
+                                <TableCellHeading
+                                    on:click={() => {
+                                        onColumnClick(cell.column);
+                                    }}>{cell.value}</TableCellHeading>
+                            {/if}
+                        {/each}
+                    {/if}
+                </TableRow>
+            </TableHead>
+            <TableBody>
+                {#if tableRows && tableRows.length > 0}
+                    {#each tableRows as row}
+                        <TableRow>
+                            {#each row.cells as cell}
+                                <TableCell>{cell.value}</TableCell>
+                            {/each}
+                        </TableRow>
                     {/each}
                 {/if}
-            </tr>
-        </thead>
-
-        <tbody>
-            {#if filteredRows && filteredRows.length > 0}
-                {#each filteredRows as row}
-                    <tr>
-                        {#each row.cells as cell}
-                            <td>{cell.value}</td>
-                        {/each}
-                    </tr>
-                {/each}
-            {/if}
-        </tbody>
-    </table>
+            </TableBody>
+        </Table>
+    </TableContainer>
+    <input type="search" name="search" bind:value={searchValue} />
 </main>
 
-<style>
+<style lang="scss">
 </style>
