@@ -26,7 +26,7 @@
                 return [];
             }
         } else {
-            return table.globalSearch(value);
+            return table.globalSearch(value.trim().split(' '));
         }
     };
 
@@ -34,7 +34,9 @@
 
     onMount(async () => {
         table = new Table();
+
         const posts = await fetchPosts();
+
         table.createFromJSON(columns, posts);
         filteredRows = table.rows;
     });
