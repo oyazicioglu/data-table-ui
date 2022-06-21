@@ -18,11 +18,11 @@
     import TableCellHeading from 'bulma-svelte/src/components/table/table-cell-heading.svelte';
     import TableContainer from 'bulma-svelte/src/components/table/table-container.svelte';
     import TableRow from 'bulma-svelte/src/components/table/table-row.svelte';
+    import Input from 'bulma-svelte/src/components/form/input.svelte';
 
     let searchValue = undefined;
-    let filteredRows = [];
     /** @type {DataTable}*/
-    let table;
+    const table = new DataTable();
     let tableColumns;
     let tableRows;
     let tableHeader;
@@ -38,40 +38,39 @@
                 return [];
             }
         } else {
-            return table.globalSearch(value.trim().split(' '));
+            return table.globalSearch(value?.trim().split(' '));
         }
     };
 
-    $: filteredRows = search(searchValue);
+    $: search(searchValue);
+
+    table.onUpdate((result) => {
+        tableRows = result;
+        console.log(result);
+    });
+
+    table.onColumnsChanged((columns) => {
+        tableColumns = columns;
+        console.log(columns);
+    });
+
+    table.onRowsChanged((rows) => {
+        tableRows = rows;
+        console.log(rows);
+    });
+
+    table.onHeaderChanged((header) => {
+        tableHeader = header;
+        console.log(header);
+    });
 
     onMount(async () => {
-        table = new DataTable();
-
         const posts = await fetchPosts();
 
         table.createFromJSON(columns, posts);
         tableRows = table.rows;
         tableColumns = table.columns;
         tableHeader = table.header;
-
-        table.onUpdate((result) => {
-            tableRows = result;
-        });
-
-        table.onColumnsChanged((columns) => {
-            tableColumns = columns;
-            console.log(columns);
-        });
-
-        table.onRowsChanged((rows) => {
-            tableRows = rows;
-            filteredRows = rows;
-        });
-
-        table.onHeaderChanged((header) => {
-            tableHeader = header;
-            console.log(header);
-        });
     });
 
     const onColumnClick = (e) => {
@@ -80,13 +79,14 @@
 </script>
 
 <main>
+    <Input type="search" bind:value={searchValue} />
     <TableContainer>
         <Table isFullWidth isHoverable isStriped>
             <TableHead>
                 <TableRow>
                     {#if tableHeader}
-                        {#each table.header?.cells as cell}
-                            {#if cell.visibility === true}
+                        {#each tableHeader?.cells as cell}
+                            {#if cell.visibility}
                                 <TableCellHeading
                                     on:click={() => {
                                         onColumnClick(cell.column);
@@ -109,7 +109,6 @@
             </TableBody>
         </Table>
     </TableContainer>
-    <input type="search" name="search" bind:value={searchValue} />
 </main>
 
 <style lang="scss">
