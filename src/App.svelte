@@ -23,6 +23,16 @@
     import Button from '../../bulma-svelte/src/components/button/button.svelte';
     import Block from '../../bulma-svelte/src/components/block/block.svelte';
     import Container from '../../bulma-svelte/src/components/layout/container.svelte';
+    import Columns from '../../bulma-svelte/src/components/columns/columns.svelte';
+    import Column from '../../bulma-svelte/src/components/columns/column.svelte';
+    import Cell from 'data-table/src/Cell.js';
+    import Dropdown from '../../bulma-svelte/src/components/dropdown/dropdown.svelte';
+    import DropdownMenu from '../../bulma-svelte/src/components/dropdown/dropdown-menu.svelte';
+    import DropdownItem from '../../bulma-svelte/src/components/dropdown/dropdown-item.svelte';
+    import Level from '../../bulma-svelte/src/components/level/level.svelte';
+    import LevelSide from '../../bulma-svelte/src/components/level/level-side.svelte';
+    import LevelItem from '../../bulma-svelte/src/components/level/level-item.svelte';
+    import Span from '../../bulma-svelte/src/components/span/span.svelte';
 
     let searchValue = undefined;
     /** @type {DataTable}*/
@@ -58,6 +68,11 @@
         console.log(header);
     });
 
+    const hideColumn = (column) => {
+        console.log(column);
+        table.hideColumn(column);
+    };
+
     onMount(async () => {
         const posts = await fetchPosts();
 
@@ -66,16 +81,21 @@
         tableColumns = table.columns;
         tableHeader = table.header;
     });
-
-    const onColumnClick = (e) => {
-        table.hideColumn(e);
-    };
 </script>
 
 <main>
     <Container isWidescreen>
         <Block>
-            <Input isExpended hasAddons type="search" bind:value={searchValue}>
+            <Input
+                isExpended
+                hasAddons
+                type="search"
+                on:keypress={(e) => {
+                    if (e.key === 'Enter') {
+                        search(searchValue);
+                    }
+                }}
+                bind:value={searchValue}>
                 <Button
                     disabled={!searchValue}
                     color="is-primary"
@@ -90,12 +110,28 @@
                 <TableHead>
                     <TableRow>
                         {#if tableHeader}
-                            {#each tableHeader?.cells as cell}
+                            {#each tableHeader?.cells as cell, i}
                                 {#if cell.visibility}
                                     <TableCellHeading
-                                        on:click={() => {
-                                            onColumnClick(cell.column);
-                                        }}>{cell.value}</TableCellHeading>
+                                        ><Columns isVCentered>
+                                            <Column>{cell.value}</Column>
+                                            <Column isNarrow>
+                                                <Dropdown isHoverable isRight={i !== 0} iconName="ellipsis-v" text="">
+                                                    <DropdownMenu>
+                                                        <DropdownItem
+                                                            asLink={false}
+                                                            action={() => {
+                                                                hideColumn(cell.column);
+                                                            }}><Span size="is-size-7">Hide</Span></DropdownItem>
+                                                        <DropdownItem isDivider />
+                                                        <DropdownItem>
+                                                            <Input style="width:120px" isExpended size="is-small" type="input" />
+                                                        </DropdownItem>
+                                                    </DropdownMenu>
+                                                </Dropdown>
+                                            </Column>
+                                        </Columns>
+                                    </TableCellHeading>
                                 {/if}
                             {/each}
                         {/if}
