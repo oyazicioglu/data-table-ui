@@ -19,6 +19,10 @@
     import TableContainer from 'bulma-svelte/src/components/table/table-container.svelte';
     import TableRow from 'bulma-svelte/src/components/table/table-row.svelte';
     import Input from 'bulma-svelte/src/components/form/input.svelte';
+    import Icon from '../../bulma-svelte/src/components/icon/icon.svelte';
+    import Button from '../../bulma-svelte/src/components/button/button.svelte';
+    import Block from '../../bulma-svelte/src/components/block/block.svelte';
+    import Container from '../../bulma-svelte/src/components/layout/container.svelte';
 
     let searchValue = undefined;
     /** @type {DataTable}*/
@@ -31,18 +35,8 @@
      * @param {string} value
      */
     const search = (value) => {
-        if (!value) {
-            if (table?.rows) {
-                return table.rows;
-            } else {
-                return [];
-            }
-        } else {
-            return table.globalSearch(value?.trim().split(' '));
-        }
+        return table.globalSearch(value?.trim().split(' '));
     };
-
-    $: search(searchValue);
 
     table.onUpdate((result) => {
         tableRows = result;
@@ -79,36 +73,48 @@
 </script>
 
 <main>
-    <Input type="search" bind:value={searchValue} />
-    <TableContainer>
-        <Table isFullWidth isHoverable isStriped>
-            <TableHead>
-                <TableRow>
-                    {#if tableHeader}
-                        {#each tableHeader?.cells as cell}
-                            {#if cell.visibility}
-                                <TableCellHeading
-                                    on:click={() => {
-                                        onColumnClick(cell.column);
-                                    }}>{cell.value}</TableCellHeading>
-                            {/if}
+    <Container isWidescreen>
+        <Block>
+            <Input isExpended hasAddons type="search" bind:value={searchValue}>
+                <Button
+                    disabled={!searchValue}
+                    color="is-primary"
+                    on:click={() => {
+                        search(searchValue);
+                    }}><Icon iconName="search" /></Button>
+            </Input>
+        </Block>
+
+        <TableContainer>
+            <Table isFullWidth isHoverable isStriped>
+                <TableHead>
+                    <TableRow>
+                        {#if tableHeader}
+                            {#each tableHeader?.cells as cell}
+                                {#if cell.visibility}
+                                    <TableCellHeading
+                                        on:click={() => {
+                                            onColumnClick(cell.column);
+                                        }}>{cell.value}</TableCellHeading>
+                                {/if}
+                            {/each}
+                        {/if}
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {#if tableRows && tableRows.length > 0}
+                        {#each tableRows as row}
+                            <TableRow>
+                                {#each row.cells as cell}
+                                    <TableCell>{cell.value}</TableCell>
+                                {/each}
+                            </TableRow>
                         {/each}
                     {/if}
-                </TableRow>
-            </TableHead>
-            <TableBody>
-                {#if tableRows && tableRows.length > 0}
-                    {#each tableRows as row}
-                        <TableRow>
-                            {#each row.cells as cell}
-                                <TableCell>{cell.value}</TableCell>
-                            {/each}
-                        </TableRow>
-                    {/each}
-                {/if}
-            </TableBody>
-        </Table>
-    </TableContainer>
+                </TableBody>
+            </Table>
+        </TableContainer>
+    </Container>
 </main>
 
 <style lang="scss">
