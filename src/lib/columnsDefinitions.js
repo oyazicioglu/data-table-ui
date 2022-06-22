@@ -2,7 +2,7 @@ export const columns = [
     {
         name: 'User Id',
         sortable: true,
-        visible: false,
+        visible: true,
         selectable: true,
         type: 'string',
     },

@@ -21,18 +21,15 @@
     import Input from 'bulma-svelte/src/components/form/input.svelte';
     import Icon from '../../bulma-svelte/src/components/icon/icon.svelte';
     import Button from '../../bulma-svelte/src/components/button/button.svelte';
+    import Buttons from '../../bulma-svelte/src/components/button/buttons.svelte';
     import Block from '../../bulma-svelte/src/components/block/block.svelte';
     import Container from '../../bulma-svelte/src/components/layout/container.svelte';
-    import Columns from '../../bulma-svelte/src/components/columns/columns.svelte';
-    import Column from '../../bulma-svelte/src/components/columns/column.svelte';
-    import Cell from 'data-table/src/Cell.js';
     import Dropdown from '../../bulma-svelte/src/components/dropdown/dropdown.svelte';
     import DropdownMenu from '../../bulma-svelte/src/components/dropdown/dropdown-menu.svelte';
     import DropdownItem from '../../bulma-svelte/src/components/dropdown/dropdown-item.svelte';
     import Level from '../../bulma-svelte/src/components/level/level.svelte';
     import LevelSide from '../../bulma-svelte/src/components/level/level-side.svelte';
     import LevelItem from '../../bulma-svelte/src/components/level/level-item.svelte';
-    import Span from '../../bulma-svelte/src/components/span/span.svelte';
 
     let searchValue = undefined;
     /** @type {DataTable}*/
@@ -40,6 +37,7 @@
     let tableColumns;
     let tableRows;
     let tableHeader;
+    let filterInputs = [];
 
     /**
      * @param {string} value
@@ -84,7 +82,7 @@
 </script>
 
 <main>
-    <Container isWidescreen>
+    <Container isFluid>
         <Block>
             <Input
                 isExpended
@@ -113,24 +111,42 @@
                             {#each tableHeader?.cells as cell, i}
                                 {#if cell.visibility}
                                     <TableCellHeading
-                                        ><Columns isVCentered>
-                                            <Column>{cell.value}</Column>
-                                            <Column isNarrow>
-                                                <Dropdown isHoverable isRight={i !== 0} iconName="ellipsis-v" text="">
-                                                    <DropdownMenu>
-                                                        <DropdownItem
-                                                            asLink={false}
-                                                            action={() => {
-                                                                hideColumn(cell.column);
-                                                            }}><Span size="is-size-7">Hide</Span></DropdownItem>
-                                                        <DropdownItem isDivider />
-                                                        <DropdownItem>
-                                                            <Input style="width:120px" isExpended size="is-small" type="input" />
-                                                        </DropdownItem>
-                                                    </DropdownMenu>
-                                                </Dropdown>
-                                            </Column>
-                                        </Columns>
+                                        ><Level>
+                                            <LevelSide>
+                                                <LevelItem>{cell.value}</LevelItem>
+                                            </LevelSide>
+                                            <LevelSide side="level-right">
+                                                <LevelItem>
+                                                    <Dropdown
+                                                        isHoverable
+                                                        isRight={i === tableHeader?.cells.length - 1}
+                                                        iconName="ellipsis-v"
+                                                        text="">
+                                                        <DropdownMenu>
+                                                            <DropdownItem asLink={false}>
+                                                                <Buttons hasAddons>
+                                                                    <Button
+                                                                        on:click={() => {
+                                                                            hideColumn(cell.column);
+                                                                        }}><Icon iconName="eye-slash" /></Button>
+                                                                    <Button><Icon iconName="sort" /></Button>
+                                                                </Buttons>
+                                                            </DropdownItem>
+                                                            <DropdownItem isDivider />
+                                                            <DropdownItem asLink={false}>
+                                                                <Input
+                                                                    bind:value={filterInputs[i]}
+                                                                    leftIconName="filter"
+                                                                    style="width:120px"
+                                                                    isExpended
+                                                                    size="is-small"
+                                                                    type="input" />
+                                                            </DropdownItem>
+                                                        </DropdownMenu>
+                                                    </Dropdown>
+                                                </LevelItem>
+                                            </LevelSide>
+                                        </Level>
                                     </TableCellHeading>
                                 {/if}
                             {/each}
