@@ -11,13 +11,14 @@
     "devDependencies": {
         "@sveltejs/vite-plugin-svelte": "^1.0.0-next.30",
         "bulma": "^0.9.4",
+        "carbon-components": "^10.56.0",
+        "carbon-components-svelte": "^0.66.1",
         "sass": "^1.52.3",
         "svelte": "^3.44.0",
         "svelte-preprocess": "^4.10.7",
         "vite": "^2.9.9"
     },
     "dependencies": {
-        "bulma-svelte": "file:../bulma-svelte",
         "data-table": "file:../data-table"
     }
 }
